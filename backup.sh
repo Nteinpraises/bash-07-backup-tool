@@ -28,12 +28,33 @@ die() {
 }
 
 main() {
-    local option="${1:-}"
+    # local option="${1:-}"
 
-    if [[ "$option" == "-h" ]]; then
-        usage
-        return 0
-    fi
+    # if [[ "$option" == "-h" ]]; then
+    #     usage
+    #     return 0
+    # fi
+    local option
+    local SOURCE
+
+    while getopts ":d:k:h" option; do 
+        case "$option" in
+            d) DEST="$OPTARG" ;;
+            k) KEEP="$OPTARG" ;;
+            h) usage; exit 0 ;;
+            :) die "option -$OPTARG reqyuries a value" 2  ;;
+            \?) die "unknown option: -$OPTARG" 2 ;;
+        esac
+    done
+
+    shift "$((OPTIND - 1))"
+
+    SOURCE="${1:-}"
+
+    printf 'SOURCE=%s\n' "$SOURCE"
+    printf 'DEST=%s\n' "$DEST"
+    printf 'KEEP=%s\n' "$KEEP"
+            
 }
 
 main "$@"
