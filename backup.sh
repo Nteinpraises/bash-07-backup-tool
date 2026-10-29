@@ -49,7 +49,19 @@ main() {
 
     shift "$((OPTIND - 1))"
 
-    SOURCE="${1:-}"
+    if [[ "$#" -ne 1 ]]; then
+        die "just one SOURCE directory expected" 2
+    fi
+
+    SOURCE="$1"
+
+    if [[ ! -d "$SOURCE" ]]; then 
+        die "SOURCE is not an existing directory: $SOURCE" 2
+    fi
+
+    if [[ ! "$KEEP" =~ ^[1-9][0-9]*$ ]]; then 
+        die "KEEP must be a positive whole number" 2
+    fi
 
     printf 'SOURCE=%s\n' "$SOURCE"
     printf 'DEST=%s\n' "$DEST"
