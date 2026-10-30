@@ -27,6 +27,36 @@ die() {
 
 }
 
+create_backup() {
+    local source="$1"
+    local dest="$2"
+    local folder_name
+    local parent_dir
+    local timestamp
+    local archive
+    local archive_path
+
+    source="$(realpath "$source")" || return 1
+    folder_name="$(basename "$source")"
+    parent_dir="$(dirname "$source")"
+    timestamp="$(date +%Y%m%d-%H%M%S)" || return 1
+
+    if ! mkdr -p "$dest"; then
+         printf 'Error: cannot create destination: %s\n' "$dest" >&2
+         return 1
+    fi
+
+    archive="${folder_name}-${timestamp}.tar.gz"
+    archive_path="${dest%/}/${archive}"
+
+    if ! tar czf "$archive_path" -c "$parent_dir" "$folder_name"; then
+        printf 'Error: backup creation failed: %s\n' "$archive" >&2
+        rm -f -- "$archive_path"
+        return 1
+    fi
+
+    printf 'backup created successfuly: %s\n' "$archive"
+}
 main() {
     # local option="${1:-}"
 
@@ -63,10 +93,15 @@ main() {
         die "KEEP must be a positive whole number" 2
     fi
 
-    printf 'SOURCE=%s\n' "$SOURCE"
-    printf 'DEST=%s\n' "$DEST"
-    printf 'KEEP=%s\n' "$KEEP"
-            
+    # printf 'SOURCE=%s\n' "$SOURCE"
+    # printf 'DEST=%s\n' "$DEST"
+    # printf 'KEEP=%s\n' "$KEEP"
+
+    if ! create_backup "$SOURCE" "$DEST"; then
+    die "Backup failed" 1
+    fi
+
+    return 0            
 }
 
 main "$@"
